@@ -45,11 +45,10 @@ IAM is comprised of four main components:
 ## User creation and add policy process
 Login with root access --> Search IAM --> Click users on left
 
-![alt text](image.png)
 
 ### STEP1: **Create user and specify user details**
 
-![alt text](image-1.png)
+![alt text](images/image-1.png)
 
 ### STEP2: Set permissions
 
@@ -57,33 +56,33 @@ Can add a user to the group or directly attach the policies.
 
 1. **Directly attaching policy**
     We can use the "aws managed policies"  or we can make the custom policies by editing the json
-   ![alt text](image-2.png)
+   ![alt text](images/image-2.png)
 
 2. **Adding to existing group with policies attached**
 
 
 ### STEP3: Review and create
 
-![alt text](image-3.png)
+![alt text](images/image-3.png)
 
 
 ### STEP4: Retrieve password
 User should account id from the url while login as a IAM user and can change their password in their first login.
 
-![alt text](image-4.png)
+![alt text](images/image-4.png)
 
 
 ### Total users list
-![alt text](image-5.png)
+![alt text](images/image-5.png)
 
 ---
 
 ## Group creation
 
 
-![alt text](image-6.png)
+![alt text](images/image-6.png)
 
 This above group (develop-group) has ec2 and s3 full access, in future any developer joins, just add that new user to this group and he will get all these permissions.
 
 eg:
-![alt text](image-7.png)
+![alt text](images/image-7.png)

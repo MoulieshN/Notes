@@ -10,12 +10,12 @@ These are crucial concepts because security in AWS is considered a **shared resp
 ## 2. Traffic flow
 In a standard setup, a user request flows through the Internet Gateway (IGW), potentially to a Load Balancer (usually placed in a public subnet), which then forwards the request to the application residing in a private subnet,. SGs and NACLs provide defense layers after the IGW and load balancer stages
 
-![alt text](image-20.png)
+![alt text](images/image-20.png)
 
 ## Security Groups
 Security Groups operate at the most granular level of security within the VPC: the EC2 instance level
 
-![alt text](image-21.png)
+![alt text](images/image-21.png)
 
 * Security Groups act as **virtual firewalls for Amazon EC2 instances (virtual servers) at the instance level**. They control inbound and outbound traffic by allowing or denying specific protocols, ports, and IP addresses.
 * Each EC2 instance can be associated with one or more security groups, and each **security group consists of inbound and outbound rules**.
@@ -38,18 +38,18 @@ Security Groups operate at the most granular level of security within the VPC: t
 
 ## Practical example
 
-![alt text](image-22.png)
+![alt text](images/image-22.png)
 
 ------
 ### VPC dashboard
-![alt text](image-23.png)
+![alt text](images/image-23.png)
 
 ----
 CREATE VPC
-![alt text](image-24.png)![alt text](image-25.png)
+![alt text](images/image-24.png)![alt text](images/image-25.png)
 
 **Create VPC workflow**
-![alt text](image-26.png)
+![alt text](images/image-26.png)
 
 -----
 
@@ -58,7 +58,7 @@ CREATE VPC
 * chose the public subnet any AZ
 * enable the public ip
   
-  ![alt text](image-27.png)
+  ![alt text](images/image-27.png)
 
 -----
 
@@ -66,17 +66,17 @@ CREATE VPC
 login into the created ec2
 Started a small python server inside the ec2 instance 
 
-![alt text](image-28.png)
+![alt text](images/image-28.png)
 
 ### If I try to access the same from chrome browser with the instance ip and port 8000, I can't access it.
 
-![alt text](image-30.png)
+![alt text](images/image-30.png)
 
 ### NACLs inbound rules allows all port range, hence this is not a problem
-![alt text](image-31.png)
+![alt text](images/image-31.png)
 
 ### because, from the above security groups, the inbound traffic rule is set it only for port 22, 
-![alt text](image-29.png)
+![alt text](images/image-29.png)
 
 
 ------
@@ -85,10 +85,10 @@ Started a small python server inside the ec2 instance
 
 ### Now after adding the inbound rule in Security group to support port, 
 
-![alt text](image-32.png)
+![alt text](images/image-32.png)
 
 ### able to access the python server
-![alt text](image-33.png)
+![alt text](images/image-33.png)
 
 ------
 ----
@@ -96,19 +96,19 @@ Started a small python server inside the ec2 instance
 
 ### If the we block it from NACL, what will happen??
 ### Edited inbound and specified the custom port 8000 to deny
-![alt text](image-34.png)
+![alt text](images/image-34.png)
 
 ### now again we can't access the python server, because NACL itself won't allow the port
-![alt text](image-29.png)
+![alt text](images/image-29.png)
 
 
 ### now let's add new inbound for NACL with rule number 50
-![alt text](image-35.png)
+![alt text](images/image-35.png)
 
 ### here, first it checks does rule number 50 applicable for the port 8000, if yes, it excutes that(allow/deny). hence from the above rule, port 8000 is applicable and it will be allowed
-![alt text](image-36.png)
+![alt text](images/image-36.png)
 
-![alt text](image-33.png)
+![alt text](images/image-33.png)
 
 ### whenever we are able to access it, the request comes to ec2 instance
-![alt text](image-37.png)
+![alt text](images/image-36.png)

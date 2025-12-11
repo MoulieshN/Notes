@@ -42,35 +42,35 @@ AWS organizes its infrastructure globally into regions and availability zones:
 The practical session demonstrated the steps to launch an EC2 instance:
 
 EC2 INSTANCE DASHBOARD
-![alt text](image-8.png)
+![alt text](images/image-8.png)
 
 
 Click on instance running to view the running instances and to create a new instances.
 
 * **STEP1: Select OS and AMI:** An operating system (OS) is essential, as it is the "heart" of the virtual machine. The OS (e.g., Ubuntu, Amazon Linux, Red Hat) is chosen, ensuring a free tier eligible option is selected.
-![alt text](image-9.png)
+![alt text](images/image-9.png)
     1. Free Tier Limit: Free tier EC2 instances (like the t2.micro) are limited to 750 hours per month; exceeding this limit or using non-free-tier instances will incur charges.
 * **Instance Type:** The free tier eligible instance is usually the T2 micro, which provides 1 CPU and 1 GB of memory.
 * **Key Pair:** A key pair is crucial for logging into the instance.
 
-    ![alt text](image-10.png)
+    ![alt text](images/image-10.png)
     1. AWS disables password authentication by default; access is granted using the key pair (a combination of public and private keys). The user creates and downloads a private key file (e.g., .pem file), which must not be shared.
 
 ----
 
 After launching new instance:
 
-![alt text](image-11.png)
+![alt text](images/image-11.png)
 
 Instance detail:
 
-![alt text](image-12.png)
+![alt text](images/image-12.png)
 
 
 ----
 Login into machine from the ubuntu terminal
 
-![alt text](image-13.png)
+![alt text](images/image-13.png)
 
 
 1. Connecting and Deploying Jenkins:

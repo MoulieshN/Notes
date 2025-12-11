@@ -1,11 +1,11 @@
 # VPC Deep Dive
 A VPC is an on-demand, configurable pool of shared cloud resources allocated within a public cloud environment, providing a logically isolated section of that provider's infrastructure. It functions as a private, virtualized network that mirrors a traditional on-premises data center but is endowed with the scalability and agility of the cloud. By creating a VPC, an organization carves out its own secure and private space, transforming the open public cloud into a manageable domain where its data and applications are not commingled with those of other tenants.
 
-![alt text](image-14.png)
+![alt text](images/image-14.png)
 
 from aws docs
 
-![alt text](image-15.png)
+![alt text](images/image-15.png)
 
 ## VPC
 **Virtual Private Cloud** is a logically isolated section of the AWS cloud where resources can be launched, secured, and interconnected. Each VPC is defined by an IPv4 CIDR block (for example, 10.0.0.0/16), representing a user-defined address space of up to 65,536 IP addresses. This virtual network mirrors an on-premises data center but inherits the elasticity, scalability, and resilience of AWS’s global infrastructure.
@@ -28,7 +28,7 @@ This distinction forms the foundation of secure, multi-tier cloud architectures.
 -----
 
 ## 2. CIDR & IP addressing (subnet sizing, planning)
-![alt text](image-16.png)
+![alt text](images/image-16.png)
 
 What: CIDR (Classless Inter-Domain Routing) defines the IP space, e.g., /16, /24.
 
@@ -218,7 +218,7 @@ It doesn’t know:
 
 So you must explicitly allow both directions.
 ```
-![alt text](image-17.png)
+![alt text](images/image-17.png)
 
 ### ⭐ Security Group = Stateful (Has memory)
 
@@ -262,7 +262,7 @@ When the same person tries to go out:
 
 No extra rules needed.
 
-![alt text](image-18.png)
+![alt text](images/image-18.png)
 
 ---
 **important: When we have security-group which remembers everything, why do we need NACLs??**
@@ -342,7 +342,7 @@ Watch this video for understanding
 
 [![Watch the video](https://img.youtube.com/vi/P8g7Z4NYk3Q/0.jpg)](https://www.youtube.com/watch?v=P8g7Z4NYk3Q&list=PLdpzxOOAlwvLNOxX0RfndiYSt1Le9azze&index=6)
 
-![alt text](image-19.png)
+![alt text](images/image-19.png)
 
 reference blog:
 
