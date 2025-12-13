@@ -12,6 +12,7 @@ Virtualization was introduced to solve the problem of wasting resources. This co
 ### Defining "The Cloud"
 The concept of "Cloud" emerged because users, like developers, might request virtual machines but they do not know where exactly those resources are physically located. These resources are interconnected, hence the term "Cloud".
 
+
 ----
 ## 2. Private Cloud vs. Public Cloud
 
