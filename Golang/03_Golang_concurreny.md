@@ -1,109 +1,150 @@
 
 | No | Topic | YouTube Reference |
 |----|------|------------------|
-| 1 | [Depth understanding M:N scheduler](#depth-understanding-m-n-scheduler) | https://www.youtube.com/watch?v=S-MaTH8WpOM |
-| 2 | [Sync package Waitgroup](#sync-package-waitgroup) | |
-| 3 | [Sync package: Mutex and RWMutex](#sync-package-mutex-and-rwmutex) | |
-| 4 | [Sync package: Once](#sync-package-once) | |
+| 1 | [Gorountines, Go-runtime, Go-schedulers](#gorounties-go-runtime-go-runtime-scheduler) | |
+| 2 | [Depth understanding M:N scheduler](#depth-understanding-m-n-scheduler) | https://www.youtube.com/watch?v=S-MaTH8WpOM |
+| 3 | [Sync package Waitgroup](#sync-package-waitgroup) | |
+| 4 | [Sync package: Mutex and RWMutex](#sync-package-mutex-and-rwmutex) | |
+| 5 | [Sync package: Once](#sync-package-once) | |
+| 6 | [Select Statements](#select-statement) | |
+| 7 | [Context package](#context-package) | https://www.youtube.com/watch?v=0x_oUlxzw5A https://www.youtube.com/watch?v=8omcakb31xQ |
 
 
 --------
+# Gorounties, Go-runtime, Go-runtime scheduler
+
+### Gorountine: Lightweight threads
+
+Other languages users OS threads directly, but the lightweight goroutines leverages the OS threads.
+
+### Facts about goroutines:
+
+- Started and managed by **go-runtime**
+- Go-routines start with just  ~2kb of memory but have **growable stacks.**
+- Seamless **context-switiching** that maximize the efficiency of using **go-runtime scheduler.**
+- Inter go-routine communication with **channels.**
+
+### Go-routine stack
+
+- All go-rountines are initially assigned with 2kb of memory.
+- Each go function has a small preamble, which calls command **morestack if it runs out of memory**
+- Then, runtime allocates a new memory segment with double the size of the old segment and restart the execution.
+- Effectively, makes go-routines infinitely growable with efficient shrinking.
+
+Go uses an **M:N scheduling model**, meaning **M goroutines run on N OS threads**. This is a key reason why Go can efficiently handle thousands (or even millions) of goroutines without excessive system overhead.
+
+## **📌 What is the M:N Scheduling Model?**
+
+- **M = Number of Goroutines** (User-space tasks)
+- **N = Number of OS Threads** (Kernel-managed execution units)
+- Instead of creating a 1:1 mapping (like Java or C++ threads), Go’s **runtime scheduler dynamically maps multiple goroutines onto a small number of OS threads**.
+
+### **🔹 Why This Matters?**
+
+✅ **High Concurrency** → Run many tasks without creating thousands of OS threads.
+
+✅ **Lower Memory Usage** → Go-routines use **~2 KB stack**, while OS threads need **~1 MB**.
+
+✅ **Efficient Scheduling** → Go **does not rely on the OS scheduler**, making context switches cheaper.
+
+-------
+
 # Depth understanding M:N scheduler
 
 Go-routine has three states
-![alt text](image.png)
+![alt text](images/image.png)
 
 Examples of what happens on scheduler when we start or running the go-routine.
 
 In a basic of main fuction, the main function runs on main thread.
 
-![alt text](image-1.png)
+![alt text](images/image-1.png)
 We can create the processors in go environments
 
-![alt text](image-2.png)
+![alt text](images/image-2.png)
 
 Now, let’s see what if main function spawns a Goroutine G1, this G1 wakes up the one of the idle processors
 
-![alt text](image-3.png)
+![alt text](images/image-3.png)
 
 Now, the new processor creates an M (os thread)
 
-![alt text](image-4.png)
+![alt text](images/image-4.png)
 
-![alt text](image-5.png)
+![alt text](images/image-5.png)
 
 What if G1 completed it’s execution, the P3 and M becomes idle
 
-![alt text](image-6.png)
+![alt text](images/image-6.png)
 
-![alt text](image-7.png)
+![alt text](images/image-7.png)
 
 From these we might be wondering what’s the need for P as we are just mapping OS thread(M) to go routines
 
 Let’s say there are two processor and two OS thread which are happily executing the G0 and G1. Suddenly, what will happen if main() spawns new go routine (G2)
 
-![alt text](image-8.png)
+![alt text](images/image-8.png)
 
 We need to find place to put G2 
-![alt text](image-9.png)
+![alt text](images/image-9.png)
 
 helps to identify what go-routine have yet to be run in their LOCAL RUN QUEUE
 
 If G1 finishes it’s executing, P1 looks in LRQ  and schedules the go routine onto the OS thread and begins executing. (**P knows what G’s are available for an M to run)**
 
-![alt text](image-10.png)
+![alt text](images/image-10.png)
 
 ### **WHAT ABOUT BLOCKED GOROUTINE?**
 
 The scheduler should maximize execution time on OS threads by moving off the blocked Go-routine from OS threads and brings them once they are ready.
 
-![alt text](image-11.png)
+![alt text](images/image-11.png)
 
 There is one go-routine G0 which is on blocked state. (System calls blocking)
-![alt text](image-12.png)
-![alt text](image-13.png)
+![alt text](images/image-12.png)
+![alt text](images/image-13.png)
 
 Now, P0 needs some OS threads to continue executing other go-routines, so it goes ahead and wake’s up the OS thread(M) from idle threads.
 
-![alt text](image-14.png)
+![alt text](images/image-14.png)
 
 If G0 becomes available, then M0 searches for P, so it wakes up the P1 from idle processors
-![alt text](image-15.png)
-![alt text](image-16.png)
+![alt text](images/image-15.png)
+![alt text](images/image-16.png)
 
 ### What will happens if M0 can’t find any processors??
 
-![alt text](image-17.png)
-![alt text](image-18.png)
+![alt text](images/image-17.png)
+![alt text](images/image-18.png)
 
 The go-rountine will be added to GLOBAL RUN QUEUE, because, other can take up the go-routine from GRQ if doesn’t have any other go-routine to run
 
-![alt text](image-19.png)
+![alt text](images/image-19.png)
 
-![alt text](image-20.png)
+![alt text](images/image-20.png)
 
 ## BLOCKING ON CHANNELS
 
-![alt text](image-21.png)
+![alt text](images/image-21.png)
 
 Inside the channel struct we have receive queue(recvq) which consists of goroutines that are blocking and waiting on a channel received to happen.
-![alt text](image-22.png)
-![alt text](image-23.png)
-![alt text](image-24.png)
-![alt text](image-25.png)
-![alt text](image-26.png)
+![alt text](images/image-22.png)
+![alt text](images/image-23.png)
+![alt text](images/image-24.png)
+![alt text](images/image-25.png)
+![alt text](images/image-26.png)
 
 ## WORK STEALING BETWEEN THREADS
-![alt text](image-27.png)
+![alt text](images/image-27.png)
 One of threads finished executing all of it’s goroutines faster than other.
 
-![alt text](image-28.png)
+![alt text](images/image-28.png)
 
 The P0 goes and look into P1’s LRQ and steals half of the goroutines from there and start exectuing.
 
-![alt text](image-29.png)
-![alt text](image-30.png)
-![alt text](image-31.png)
+![alt text](images/image-29.png)
+![alt text](images/image-30.png)
+![alt text](images/image-31.png)
 
 
 --------
@@ -414,4 +455,370 @@ This program deadlocks forever
 
 
 -----
-![alt text](image-32.png)
+
+# Types of Channels
+
+1️⃣ **Buffered Channels** (Non-blocking)
+
+2️⃣ **Un-buffered Channels** (Blocking)
+
+3️⃣ **Directional Channels** (Send-only / Receive-only)
+
+4️⃣ **Closing Channels** (To signal completion)
+
+### Buffered channels (Non-blocking)
+
+- A buffered channel has a defined capacity to store values.
+- When a sender sends a value on a buffered channel, it blocks only if the channel is full.
+- When a receiver tries to receive from a buffered channel, it blocks only if the channel is empty.
+- Buffered channels are useful when you want to decouple the timing of sender and receiver, allowing them to operate more independently.
+- They can provide a degree of asynchrony, as the sender can continue sending even if the receiver is not immediately ready
+
+```go
+ch := make(chan int, 3) // Buffered channel with capacity 3
+ch <- 1  
+ch <- 2  
+ch <- 3  // No blocking until full
+
+fmt.Println(<-ch) // Prints 1
+fmt.Println(<-ch) // Prints 2
+fmt.Println(<-ch) // Prints 3
+```
+
+### Un-buffered channels (Blocking)
+
+- An un-buffered channel doesn't have any capacity to store values.
+- When a sender sends a value on an un-buffered channel, it blocks until a receiver receives that value.
+- Un-buffered channels are typically used for synchronized communication between go-routines.
+- They enforce a direct exchange of data between sender and receiver, ensuring that the sender and receiver are both ready before the value is exchanged.
+
+```go
+ch := make(chan int) // Unbuffered channel
+
+go func() {
+    ch <- 42 // Blocks until received
+}()
+
+fmt.Println(<-ch) // Receives 42
+```
+
+### **Directional Channels** (Restrict Send/Receive)
+
+You can specify **send-only** or **receive-only** channels in function parameters.
+
+```go
+func sendData(ch chan<- int) { // Send-only
+	ch <- 99
+}
+
+func receiveData(ch <-chan int) { // Receive-only
+	fmt.Println(<-ch)
+}
+
+func main() {
+	ch := make(chan int)
+	go sendData(ch)
+	receiveData(ch)
+}
+```
+
+- If a go-routine writes to a full channel and **no other go-routine is reading**, it **deadlocks**.
+- If a go-routine reads from an empty channel and **no other go-routine is writing**, it **deadlocks**.
+
+| Operation | Channel State            | Result                                                                 |
+|----------|--------------------------|------------------------------------------------------------------------|
+| Read     | nil                      | Block                                                                  |
+|      | Open and Not Empty       | Value                                                                  |
+|      | Open and Empty           | Block                                                                  |
+|      | Closed                   | `<default value>, false`                                               |
+|      | Write Only               | Compilation Error                                                      |
+|          |                          |                                                                        |
+| Write    | nil                      | Block                                                                  |
+|     | Open and Full            | Block                                                                  |
+|     | Open and Not Full        | Write Value                                                            |
+|     | Closed                   | **panic**                                                              |
+|     | Receive Only             | Compilation Error                                                      |
+|          |                          |                                                                        |
+| Close    | nil                      | **panic**                                                              |
+|     | Open and Not Empty       | Closes channel; reads succeed until channel is drained, then default |
+|     | Open and Empty           | Closes channel; reads produce default value                            |
+|     | Closed                   | **panic**                                                              |
+|     | Receive Only             | Compilation Error                                                      |
+
+
+-----
+
+# Select Statement
+
+### Core Concept: The "Glue" of Concurrency
+The select statement is considered the "lingua franca" of Go concurrency. While channels bind goroutines together, the select statement binds channels together, allowing you to compose them into larger abstractions and coordinate complex system components.
+### Key Mechanics & Syntax
+* **Simultaneous Evaluation:** Unlike a standard switch block which tests cases sequentially, a select block considers all channel reads and writes simultaneously.
+* **Blocking Behavior:** If none of the channels in the case statements are ready (e.g., no data to read, no space to write), the entire select statement blocks until one becomes ready.
+* **Execution:** Once a channel is ready, that specific operation proceeds, and its corresponding code block executes.
+
+```golang
+var c1, c2 <-chan interface{}
+var c3 chan<- interface{}
+
+select {
+case <- c1:
+    // Executes if c1 has data or is closed
+case <- c2:
+    // Executes if c2 has data or is closed
+case c3 <- struct{}{}:
+    // Executes if c3 has capacity for a write
+}
+```
+
+### Handling multiple ready channels
+A common interview question is: "What happens if multiple channels are ready at the same time?"
+* **Pseudo-random Selection:** The Go runtime performs a pseudo-random uniform selection. Each ready case has an equal chance of being selected.
+* **Design Philosophy:** This prevents "starvation" and ensures Go programs perform well in the "average case," as the runtime cannot know the programmer's specific intent for the channels.
+
+Uniform Selection Example:
+```golang
+func main(){
+    c1 := make(chan interface{}); close(c1)
+    c2 := make(chan interface{}); close(c2)
+
+    var c1Count, c2Count int
+    for i := 1000; i >= 0; i-- {
+        select {
+        case <-c1:
+            c1Count++
+        case <-c2:
+            c2Count++
+        }
+    }
+}
+
+o/p: 
+c1Count: 505
+c2Count: 496
+
+// As you can see, in a thousand iterations, roughly half the time the select statement
+// read from c1, and roughly half the time it read from c2
+```
+
+
+### Non-Blocking Operations and the default Clause
+If you want to exit a select block immediately when no channels are ready, you use a default clause.
+* **Immediate Execution:** The default case runs almost instantaneously if all other cases are blocking.
+* **The for-select Pattern:** This is frequently used to allow a goroutine to perform work in a loop while occasionally checking for a signal (like a cancellation or completion signal)
+
+```golang
+func main(){
+    done := make(chan interface{})
+    go func() {
+        time.Sleep(5 * time.Second)
+        close(done)
+    }()
+
+    workCounter := 0
+    loop:
+    for {
+        select {
+        case <-done:
+            break loop // Stop when signaled
+        default:
+        }
+        // Simulate work
+        workCounter++
+        time.Sleep(1 * time.Second)
+    }
+}
+```
+
+### Implement timeouts
+
+Because a select block can block indefinitely, it is often paired with time.After to implement timeouts. time.After returns a channel that sends the current time after a specified duration, effectively "racing" against your other operations
+
+```golang
+func main(){
+    var c <-chan int // A nil channel that will always block
+    select {
+    case <-c:
+        // This will never happen
+    case <-time.After(1 * time.Second):
+        fmt.Println("Timed out.")
+    }
+}
+```
+
+#### **NOTE:**
+* Nil Channels: Reading from or writing to a nil channel in a select statement will block forever for that specific case.
+* Empty Select: The statement select {} (a select with no cases) will block the goroutine forever
+
+-------
+
+# Prevention of go-routine leaks
+
+While goroutines are lightweight and easy to create, they are not garbage collected by the Go runtime. If a goroutine is started and cannot terminate, it will remain in memory for the lifetime of the process, leading to memory "creep".
+Termination Paths: A goroutine naturally terminates when it:
+* Completes its work.
+* Encounters an unrecoverable error.
+* Is explicitly told to stop working.
+
+### Leak scenario: Blocking on a receive
+A leak often occurs when a goroutine is waiting to receive data from a channel that will never be populated.
+```golang
+func main() {
+    doWork := func(strings <-chan string) <-chan interface{} {
+        completed := make(chan interface{})
+        go func() {
+            defer fmt.Println("doWork exited.")
+            defer close(completed)
+            for s := range strings {
+                fmt.Println(s)
+            }
+        }()
+        return completed
+    }
+
+    // Passing nil means the 'strings' channel never receives data.
+    // The goroutine inside doWork blocks forever.
+    doWork(nil) 
+    fmt.Println("Done.")
+}
+
+// strings channel nil, hence, the go rountine will be blocked on for loop expecting a value from the channel (leak scenario)
+```
+
+### Mitigation: done channel pattern
+The standard way to prevent leaks is to establish a signal between a parent goroutine and its children. By convention, this is a read-only channel usually named done. The parent closes this channel when it wants the child to terminate.
+
+```golang
+func main(){
+    doWork := func(done <-chan interface{}, strings <-chan string) <-chan interface{} {
+        terminated := make(chan interface{})
+        go func() {
+            defer fmt.Println("doWork exited.")
+            defer close(terminated)
+            for {
+                select {
+                case s := <-strings:
+                    fmt.Println(s)
+                case <-done: // Signal received to stop
+                    return
+                }
+            }
+        }()
+        return terminated
+    }
+
+    done := make(chan interface{})
+    terminated := doWork(done, nil)
+
+    go func() {
+        time.Sleep(1 * time.Second)
+        close(done) // Closing signals the child to exit
+    }()
+
+    <-terminated // Joining the goroutine
+    fmt.Println("Done!")
+}
+
+o/p:
+Canceling doWork goroutine...
+doWork exited.
+Done.
+
+// now, we passed a done, and fired a seperate go-routine which closes the done after 1 second, 
+// hence, for select in dowork function, will be expecting some value from strings channel (which is nil), so it checks done, after 1 seconds done will be closed, so for select reads default value from done returns the from the funtion
+
+// after return is done, defer will be executed and close the terminated channel as well
+
+// from the main fucnition, default value will be read from terminated channel and prints Done
+```
+
+
+### Leak scenario: Blocking on send
+
+Leaks can also occur in "producer" goroutines that are blocked while trying to write a value to a channel that no longer has any readers.
+
+```golang
+func main(){
+    newRandStream := func() <-chan int {
+        randStream := make(chan int)
+        go func() {
+            defer fmt.Println("newRandStream closure exited.")
+            defer close(randStream)
+            for {
+                randStream <- rand.Int()
+            }
+        }()
+        return randStream
+    }
+    randStream := newRandStream()
+    fmt.Println("3 random ints:")
+    for i := 1; i <= 3; i++ {
+        fmt.Printf("%d: %d\n", i, <-randStream)
+    }
+}
+
+o/p:
+
+3 random ints:
+1: 5577006791947779410
+2: 8674665223082153551
+3: 6129484611666145821
+
+// You can see from the output that the deferred fmt.Println statement never gets run.
+// After the third iteration of our loop, our goroutine blocks trying to send the next random integer to a channel that is no longer being read from. 
+// We have no way of telling the producer it can stop.
+```
+
+### Mitigation: 
+
+```golang
+func main(){
+    newRandStream := func(done <-chan interface{}) <-chan int {
+    randStream := make(chan int)
+        go func() {
+            defer fmt.Println("newRandStream closure exited.")
+            defer close(randStream)
+            for {
+                select {
+                case randStream <- rand.Int(): // Proceed if channel has a reader
+                case <-done: // Stop if signaled
+                    return
+                }
+            }
+        }()
+        return randStream
+    }
+    done := make(chan interface{})
+    randStream := newRandStream(done)
+    fmt.Println("3 random ints:")
+    for i := 1; i <= 3; i++ {
+        fmt.Printf("%d: %d\n", i, <-randStream)
+    }
+    close(done)
+    // Simulate ongoing work
+    time.Sleep(1 * time.Second)
+}
+
+o/p:
+3 random ints:
+1: 5577006791947779410
+2: 8674665223082153551
+3: 6129484611666145821
+newRandStream closure exited.
+```
+
+```text
+Now that we know how to ensure goroutines don’t leak, we can stipulate a convention: 
+If a goroutine is responsible for creating a goroutine, 
+it is also responsible for ensuring it can stop the goroutine.
+```
+
+
+------
+
+# Context Package:
+## youtube links (must watch)
+* https://www.youtube.com/watch?v=0x_oUlxzw5A
+* https://www.youtube.com/watch?v=8omcakb31xQ
+
+NOTES YET TO BE ADDED
