@@ -9,6 +9,9 @@
 
 
 
+![alt text](./images/common.png)
+
+
 
 # Q1. ARCHITECTURE OF MYSQL
 
